@@ -1,3 +1,5 @@
+from webbrowser import get
+
 from django.contrib.auth import get_user
 from django.contrib.auth.models import User
 from django.test import TestCase
@@ -77,7 +79,7 @@ class RegistrationTestCase(TestCase):
         self.assertEqual(user_count, 1)
         self.assertFormError(response, "form", "username", "A user with that username already exists.")
 
-        class LoginTestCase(TestCase):
+    class LoginTestCase(TestCase):
             def test_successful_login(self):
                 db_user = User.objects.create(username="orif", first_name="Orif")
                 db_user.set_password("qwertyu")
@@ -120,3 +122,28 @@ class RegistrationTestCase(TestCase):
 
                 user = get_user(self.client)
                 self.assertFalse(user.is_authenticated)
+
+
+class ProfileTestCase(TestCase):
+    def test_login_required(self):
+        response = self.client.get(reverse("users:profile"))
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, reverse("users:login") + "?next=/users/profile/")
+
+    def test_profile_details(self):
+        user = User.objects.create(
+            username="orif", first_name="Orif", last_name="Sarniyozov", email="sarniyozovorif@gmail.com"
+        )
+        user.set_password("qwertyu")
+        user.save()
+
+        self.client.login(username="orif", password="qwertyu")
+
+        response = self.client.get(reverse("users:profile"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, user.username)
+        self.assertContains(response, user.first_name)
+        self.assertContains(response, user.last_name)
+        self.assertContains(response, user.email)
