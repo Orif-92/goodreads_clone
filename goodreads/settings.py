@@ -8,7 +8,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-81fs7gpp2n++_*=kaq^wn^s^x7h35y8w$99ntw)nps*tmva@+#'
+SECRET_KEY = 'django-insecure-81fs7gpp2n++_*=kaq^wn^s^x7h35y8w$99ntw)nps*timeval@+#'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -74,7 +74,7 @@ DATABASES = {
         'HOST': '127.0.0.1',
         'PORT': '5432',
         'USER': 'postgres',
-        'PASSWORD': 'orifs'
+        'PASSWORD': 'orifices'
     }
 }
 
@@ -109,6 +109,7 @@ USE_I18N = True
 
 USE_TZ = True
 
+AUTH_USER_MODEL = "users.CustomUser"
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.0/howto/static-files/

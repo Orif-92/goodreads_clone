@@ -1,9 +1,8 @@
-from webbrowser import get
-
 from django.contrib.auth import get_user
-from django.contrib.auth.models import User
 from django.test import TestCase
 from django.urls import reverse
+
+from users.models import CustomUser
 
 
 class RegistrationTestCase(TestCase):
@@ -11,32 +10,32 @@ class RegistrationTestCase(TestCase):
         self.client.post(
             reverse("users:register"),
             data={
-                "username": "orif",
-                "first_name": "Orif",
-                "last_name": "Sarniyozov",
+                "username": "orig",
+                "first_name": "Orig",
+                "last_name": "Carnivorous",
                 "email": "sarniyozovorif@gmail.com",
-                "password": "qwertyu"
+                "password": "qwerty"
             }
         )
 
-        user = get(username="orif")
+        user = CustomUser.objects.get(username="orig")
 
-        self.assertEqual(user.first_name, "Orifr")
-        self.assertEqual(user.last_name, "Sarniyozov")
+        self.assertEqual(user.first_name, "Orig")
+        self.assertEqual(user.last_name, "Carnivorous")
         self.assertEqual(user.email, "sarniyozovorif@gmail.com")
-        self.assertNotEqual(user.password, "qwertyu")
-        self.assertTrue(user.check_password("qwertyu"))
+        self.assertNotEqual(user.password, "qwerty")
+        self.assertTrue(user.check_password("qwerty"))
 
     def test_required_fields(self):
         response = self.client.post(
             reverse("users:register"),
             data={
-                "first_name": "Orif",
+                "first_name": "Orig",
                 "email": "sarniyozovorif@gmail.com"
             }
         )
 
-        user_count = User.objects.count()
+        user_count = CustomUser.objects.count()
 
         self.assertEqual(user_count, 0)
         self.assertFormError(response, "form", "username", "This field is required.")
@@ -46,52 +45,52 @@ class RegistrationTestCase(TestCase):
         response = self.client.post(
             reverse("users:register"),
             data={
-                "username": "orif",
-                "first_name": "Orif",
-                "last_name": "Sarniyozov",
+                "username": "orig",
+                "first_name": "Orig",
+                "last_name": "Carnivorous",
                 "email": "invalid-email",
-                "password": "qwertyu"
+                "password": "qwerty"
             }
         )
 
-        user_count = User.objects.count()
+        user_count = CustomUser.objects.count()
 
         self.assertEqual(user_count, 0)
         self.assertFormError(response, "form", "email", "Enter a valid email address.")
 
     def test_unique_username(self):
-        user = User.objects.create(username="jakhongir", first_name="Jakhongir")
-        user.set_password("somepass")
+        user = CustomUser.objects.create(username="orig", first_name="Orig")
+        user.set_password("qwerty")
         user.save()
 
         response = self.client.post(
             reverse("users:register"),
             data={
-                "username": "orif",
-                "first_name": "Orif",
-                "last_name": "Sarniyozov",
+                "username": "orig",
+                "first_name": "Orig",
+                "last_name": "Carnivorous",
                 "email": "sarniyozovorif@gmail.com",
-                "password": "qwertyu"
+                "password": "qwerty"
             }
         )
 
-        user_count = User.objects.count()
+        user_count = CustomUser.objects.count()
         self.assertEqual(user_count, 1)
         self.assertFormError(response, "form", "username", "A user with that username already exists.")
 
     class LoginTestCase(TestCase):
         def setUp(self):
-            # DRY - Dont repeat yourself
-            self.db_user = User.objects.create(username="orif", first_name="Orif")
-            self.db_user.set_password("qwertyu")
+            # DRY - Don't repeat yourself
+            self.db_user = CustomUser.objects.create(username="orig", first_name="Orig")
+            self.db_user.set_password("qwerty")
             self.db_user.save()
 
         def test_successful_login(self):
             self.client.post(
                 reverse("users:login"),
                 data={
-                    "username": "orif",
-                    "password": "qwertyu"
+                    "username": "orig",
+                    "password": "qwerty"
                 }
             )
 
@@ -103,7 +102,7 @@ class RegistrationTestCase(TestCase):
                 reverse("users:login"),
                 data={
                     "username": "wrong-username",
-                    "password": "qwertyu"
+                    "password": "qwerty"
                 }
             )
 
@@ -113,7 +112,7 @@ class RegistrationTestCase(TestCase):
             self.client.post(
                 reverse("users:login"),
                 data={
-                    "username": "orif",
+                    "username": "orig",
                     "password": "wrong-password"
                 }
             )
@@ -122,12 +121,14 @@ class RegistrationTestCase(TestCase):
             self.assertFalse(user.is_authenticated)
 
         def test_logout(self):
-            self.client.login(username="orif", password="qwertyu")
+            self.client.login(username="orig", password="qwerty")
 
             self.client.get(reverse("users:logout"))
 
             user = get_user(self.client)
             self.assertFalse(user.is_authenticated)
+
+
 class ProfileTestCase(TestCase):
     def test_login_required(self):
         response = self.client.get(reverse("users:profile"))
@@ -136,13 +137,13 @@ class ProfileTestCase(TestCase):
         self.assertEqual(response.url, reverse("users:login") + "?next=/users/profile/")
 
     def test_profile_details(self):
-        user = User.objects.create(
-            username="orif", first_name="Orif", last_name="Sarniyozov", email="sarniyozovorif@gmail.com"
+        user = CustomUser.objects.create(
+            username="orig", first_name="Orig", last_name="Carnivorous", email="sarniyozovorif@gmail.com"
         )
-        user.set_password("qwertyu")
+        user.set_password("qwerty")
         user.save()
 
-        self.client.login(username="orif", password="qwertyu")
+        self.client.login(username="orig", password="qwerty")
 
         response = self.client.get(reverse("users:profile"))
 
@@ -151,26 +152,3 @@ class ProfileTestCase(TestCase):
         self.assertContains(response, user.first_name)
         self.assertContains(response, user.last_name)
         self.assertContains(response, user.email)
-
-        def test_update_profile(self):
-            user = User.objects.create(
-                username="orif", first_name="Orif", last_name="Sarniyozov", email="sarniyozovorifgmail.com"
-            )
-            user.set_password("qwertyu")
-            user.save()
-            self.client.login(username="orif", password="qwertyu")
-
-            response = self.client.post(
-                reverse("users:profile-edit"),
-                data={
-                    "username": "orif",
-                    "first_name": "Orif",
-                    "last_name": "Sarniy",
-                    "email": "sarniyozov@gmail.com"
-                }
-            )
-            user.refresh_from_db()
-
-            self.assertEqual(user.last_name, "Sarniy")
-            self.assertEqual(user.email, "sarniyozov@gmail.com")
-            self.assertEqual(response.url, reverse("users:profile"))
