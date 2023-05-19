@@ -80,50 +80,54 @@ class RegistrationTestCase(TestCase):
         self.assertFormError(response, "form", "username", "A user with that username already exists.")
 
     class LoginTestCase(TestCase):
-            def test_successful_login(self):
-                db_user = User.objects.create(username="orif", first_name="Orif")
-                db_user.set_password("qwertyu")
-                db_user.save()
+        def setUp(self):
+            # DRY - Dont repeat yourself
+            self.db_user = User.objects.create(username="orif", first_name="Orif")
+            self.db_user.set_password("qwertyu")
+            self.db_user.save()
 
-                self.client.post(
-                    reverse("users:login"),
-                    data={
-                        "username": "orif",
-                        "password": "qwertyu"
-                    }
-                )
+        def test_successful_login(self):
+            self.client.post(
+                reverse("users:login"),
+                data={
+                    "username": "orif",
+                    "password": "qwertyu"
+                }
+            )
 
-                user = get_user(self.client)
-                self.assertTrue(user.is_authenticated)
+            user = get_user(self.client)
+            self.assertTrue(user.is_authenticated)
 
-            def test_wrong_credentials(self):
-                db_user = User.objects.create(username="orif", first_name="Orif")
-                db_user.set_password("qwertyu")
-                db_user.save()
+        def test_wrong_credentials(self):
+            self.client.post(
+                reverse("users:login"),
+                data={
+                    "username": "wrong-username",
+                    "password": "qwertyu"
+                }
+            )
 
-                self.client.post(
-                    reverse("users:login"),
-                    data={
-                        "username": "wrong-username",
-                        "password": "qwertyu"
-                    }
-                )
+            user = get_user(self.client)
+            self.assertFalse(user.is_authenticated)
 
-                user = get_user(self.client)
-                self.assertFalse(user.is_authenticated)
+            self.client.post(
+                reverse("users:login"),
+                data={
+                    "username": "orif",
+                    "password": "wrong-password"
+                }
+            )
 
-                self.client.post(
-                    reverse("users:login"),
-                    data={
-                        "username": "orif",
-                        "password": "wrong-password"
-                    }
-                )
+            user = get_user(self.client)
+            self.assertFalse(user.is_authenticated)
 
-                user = get_user(self.client)
-                self.assertFalse(user.is_authenticated)
+        def test_logout(self):
+            self.client.login(username="orif", password="qwertyu")
 
+            self.client.get(reverse("users:logout"))
 
+            user = get_user(self.client)
+            self.assertFalse(user.is_authenticated)
 class ProfileTestCase(TestCase):
     def test_login_required(self):
         response = self.client.get(reverse("users:profile"))

@@ -6,6 +6,14 @@
 </head>
 <body>
 
+{% if messages %}
+
+    {% for message in messages %}
+        <span class="{{ message.tags }}">{{ message }}</span>
+    {% endfor %}
+
+{% endif %}
+
 <h1>Books</h1>
 
 {% if books %}
@@ -22,5 +30,4 @@
 {% endif %}
 
 </body>
-</html>
 </html>
