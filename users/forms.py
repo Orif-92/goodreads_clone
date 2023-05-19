@@ -15,5 +15,7 @@ class UserCreateForm(forms.ModelForm):
         return user
 
 
-class UserLoginForm:
-    pass
+class UserUpdateForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ('username', 'first_name', 'last_name', 'email')
