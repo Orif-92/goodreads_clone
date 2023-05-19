@@ -5,10 +5,22 @@
 {% block content %}
     <h1>Profile Page</h1>
 
-    <a class="btn btn-outline-primary" href="{% url 'users:profile-edit' %}">edit profile</a>
 
-    <p>Username: {{ user.username }}</p>
-    <p>First Name: {{ user.first_name }}</p>
-    <p>Last Name: {{ user.last_name }}</p>
-    <p>Email: {{ user.email }}</p>
+    <div class="d-flex">
+        <div class="flex-shrink-0">
+            <img class="profile-pic" alt="Profile picture" src="{{ user.profile_picture.url }}">
+        </div>
+        <div class="flex-grow-1 ms-3">
+             <p>Username: {{ user.username }}</p>
+             <p>First Name: {{ user.first_name }}</p>
+             <p>Last Name: {{ user.last_name }}</p>
+             <p>Email: {{ user.email }}</p>
+        </div>
+    </div>
+
+    <div>
+        <a class="btn btn-outline-primary" href="{% url 'users:profile-edit' %}">edit profile</a>
+    </div>
+
+
 {% endblock %}

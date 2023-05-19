@@ -18,7 +18,7 @@ class RegistrationTestCase(TestCase):
             }
         )
 
-        user = CustomUser.objects.get(username="orig")
+        user = get(username="orig")
 
         self.assertEqual(user.first_name, "Orig")
         self.assertEqual(user.last_name, "Carnivorous")
